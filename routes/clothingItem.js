@@ -8,7 +8,7 @@ const {
   deleteLike,
 } = require("../controllers/clothingItem");
 
-//CRUD
+// CRUD
 
 // Create
 router.post("/", createItem);
