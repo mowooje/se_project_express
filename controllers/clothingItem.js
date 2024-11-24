@@ -1,5 +1,5 @@
-const ClothingItem = require("../models/clothingItem");
 const mongoose = require("mongoose");
+const ClothingItem = require("../models/clothingItem");
 const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/errors");
 
 const createItem = (req, res) => {
