@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/errors");
 
@@ -37,20 +38,34 @@ const getUser = (req, res) => {
 
 // POST /users
 
-const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+const loginUser = (req, res) => {
+  const { email, password } = req.body;
 
-  User.create({ name, avatar })
-    .then((user) => res.status(201).send(user))
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required" });
+  }
+
+  User.findOne({ email })
+    .select("+password")
+    .then(async (user) => {
+      if (!user) {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(BAD_REQUEST).send({ message: "Invalid credentials" });
+      }
+
+      const { password: _password, ...userWithoutPassword } = user.toObject();
+      res.status(200).send(userWithoutPassword);
+    })
     .catch((err) => {
       console.error(err);
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: err.message });
-      }
-      return res
-        .status(DEFAULT)
-        .send({ message: "An error has occurred on the server" });
+      res.status(DEFAULT).send({ message: "An error occurred on the server" });
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+module.exports = { getUsers, createUser, getUser, loginUser };
