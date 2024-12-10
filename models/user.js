@@ -29,16 +29,30 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// Pre-save hook to hash the password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
+    return next();
   } catch (err) {
-    next(err);
+    return next(err);
   }
 });
+
+userSchema.statics.findUserByCredentials = async function (email, password) {
+  const user = await this.findOne({ email }).select("+password");
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
+  return user;
+};
 
 module.exports = mongoose.model("user", userSchema);

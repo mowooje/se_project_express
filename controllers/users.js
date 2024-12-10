@@ -1,6 +1,14 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { BAD_REQUEST, NOT_FOUND, DEFAULT } = require("../utils/errors");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  DEFAULT,
+  CONFLICT,
+  UNAUTHORIZED,
+} = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/config");
 
 // GET /users
 
@@ -38,7 +46,40 @@ const getUser = (req, res) => {
 
 // POST /users
 
-const loginUser = (req, res) => {
+const createUser = async (req, res) => {
+  try {
+    const { name, avatar, email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(BAD_REQUEST)
+        .send({ message: "Email and password are required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      avatar,
+      email,
+      password: hashedPassword,
+    });
+    const { password: _password, ...userWithoutPassword } = user.toObject();
+    res.status(201).send({ data: user });
+  } catch (err) {
+    console.error(err);
+    if (err.code === 11000) {
+      return res
+        .status(CONFLICT)
+        .send({ message: "A user with this email already exists." });
+    }
+    return res
+      .status(DEFAULT)
+      .send({ message: "An error has occurred on the server" });
+  }
+};
+
+const login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -47,25 +88,23 @@ const loginUser = (req, res) => {
       .send({ message: "Email and password are required" });
   }
 
-  User.findOne({ email })
-    .select("+password")
-    .then(async (user) => {
-      if (!user) {
-        return res.status(NOT_FOUND).send({ message: "User not found" });
-      }
+  try {
+    const user = await User.findUserByCredentials(email, password);
 
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(BAD_REQUEST).send({ message: "Invalid credentials" });
-      }
-
-      const { password: _password, ...userWithoutPassword } = user.toObject();
-      res.status(200).send(userWithoutPassword);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(DEFAULT).send({ message: "An error occurred on the server" });
+    const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+      expiresIn: "7d",
     });
+    const { password: _password, ...userWithoutPassword } = user.toObject();
+    res.send({ token, user: userWithoutPassword });
+  } catch (err) {
+    console.error(err);
+    if (err.message === "Invalid credentials") {
+      return res.status(UNAUTHORIZED).send({ message: err.message });
+    }
+    return res
+      .status(DEFAULT)
+      .send({ message: "An error has occurred on the server" });
+  }
 };
 
-module.exports = { getUsers, createUser, getUser, loginUser };
+module.exports = { getUsers, createUser, getUser, login };
