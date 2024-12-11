@@ -71,7 +71,7 @@ const updateUserProfile = (req, res) => {
   User.findByIdAndUpdate(
     userId,
     { name, avatar },
-    { new: true, runValidators: true } // Return the updated document and run validators
+    { new: true, runValidators: true }
   )
     .orFail()
     .then((user) => {
@@ -113,8 +113,11 @@ const createUser = async (req, res) => {
       password: hashedPassword,
     });
 
+    const userObj = user.toObject();
+    delete userObj.password;
+
     const { password: _password, ...userWithoutPassword } = user.toObject();
-    res.status(201).send({ data: userWithoutPassword });
+    res.status(201).send({ data: userObj });
   } catch (err) {
     console.error(err);
     if (err.code === 11000) {
