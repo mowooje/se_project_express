@@ -64,6 +64,34 @@ const getCurrentUser = (req, res) => {
     });
 };
 
+const updateUserProfile = (req, res) => {
+  const userId = req.user._id;
+  const { name, avatar } = req.body;
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar },
+    { new: true, runValidators: true } // Return the updated document and run validators
+  )
+    .orFail()
+    .then((user) => {
+      const { password: _password, ...userWithoutPassword } = user.toObject();
+      res.status(200).send(userWithoutPassword);
+    })
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "ValidationError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "User not found" });
+      }
+      return res
+        .status(DEFAULT)
+        .send({ message: "An error has occurred on the server" });
+    });
+};
+
 // POST /users
 
 const createUser = async (req, res) => {
@@ -129,4 +157,11 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, createUser, getUser, getCurrentUser, login };
+module.exports = {
+  getUsers,
+  createUser,
+  getUser,
+  getCurrentUser,
+  login,
+  updateUserProfile,
+};
