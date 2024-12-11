@@ -44,6 +44,26 @@ const getUser = (req, res) => {
     });
 };
 
+const getCurrentUser = (req, res) => {
+  const userId = req.user._id;
+
+  User.findById(userId)
+    .orFail()
+    .then((user) => res.status(200).send(user))
+    .catch((err) => {
+      console.error(err);
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: err.message });
+      }
+      return res
+        .status(DEFAULT)
+        .send({ message: "An error has occurred on the server" });
+    });
+};
+
 // POST /users
 
 const createUser = async (req, res) => {
@@ -64,8 +84,9 @@ const createUser = async (req, res) => {
       email,
       password: hashedPassword,
     });
+
     const { password: _password, ...userWithoutPassword } = user.toObject();
-    res.status(201).send({ data: user });
+    res.status(201).send({ data: userWithoutPassword });
   } catch (err) {
     console.error(err);
     if (err.code === 11000) {
@@ -94,6 +115,7 @@ const login = async (req, res) => {
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
       expiresIn: "7d",
     });
+
     const { password: _password, ...userWithoutPassword } = user.toObject();
     res.send({ token, user: userWithoutPassword });
   } catch (err) {
@@ -107,4 +129,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, createUser, getUser, login };
+module.exports = { getUsers, createUser, getUser, getCurrentUser, login };

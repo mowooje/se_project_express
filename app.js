@@ -1,16 +1,19 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const mainRouter = require("./routes/index");
+const auth = require("./middlewares/auth");
+const { login, createUser } = require("./controllers/users");
 
 const app = express();
 
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: "5d8b8592978f8bd833ca8133",
-  };
-  next();
-});
+
+app.use("/users/me", auth);
+
+// Unprotected routes
+app.post("/signin", login);
+app.post("/signup", createUser);
+app.get("/items", getItems);
 
 app.use("/", mainRouter);
 
