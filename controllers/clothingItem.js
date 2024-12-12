@@ -49,10 +49,9 @@ const deleteItem = (req, res) => {
           .send({ message: "You are not authorized to delete this item" });
       }
 
-      return ClothingItem.findByIdAndDelete(itemId);
-    })
-    .then((deletedItem) => {
-      res.status(200).send({ data: deletedItem });
+      return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
+        res.status(200).send({ data: deletedItem });
+      });
     })
     .catch((err) => {
       if (err.name === "CastError") {
