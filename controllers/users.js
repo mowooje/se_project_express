@@ -82,8 +82,7 @@ const createUser = async (req, res) => {
     const userObj = user.toObject();
     delete userObj.password;
 
-    const { password: _password, ...userWithoutPassword } = user.toObject();
-    res.status(201).send({ data: userObj });
+    return res.status(201).send({ data: userObj });
   } catch (err) {
     console.error(err);
     if (err.code === 11000) {
@@ -114,7 +113,7 @@ const login = async (req, res) => {
     });
 
     const { password: _password, ...userWithoutPassword } = user.toObject();
-    res.send({ token, user: userWithoutPassword });
+    return res.send({ token, user: userWithoutPassword });
   } catch (err) {
     console.error(err);
     if (err.message === "Invalid credentials") {

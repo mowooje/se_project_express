@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function preSave(next) {
   if (!this.isModified("password")) return next();
 
   try {
@@ -40,7 +40,10 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.statics.findUserByCredentials = async function (email, password) {
+userSchema.statics.findUserByCredentials = async function findUserByCredentials(
+  email,
+  password
+) {
   const user = await this.findOne({ email }).select("+password");
   if (!user) {
     throw new Error("Invalid credentials");
