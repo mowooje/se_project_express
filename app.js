@@ -10,12 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/users/me", auth);
-
 // Unprotected routes
-app.post("/signin", login);
-app.post("/signup", createUser);
-app.get("/items", getItems);
 
 app.use("/", mainRouter);
 
