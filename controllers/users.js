@@ -70,6 +70,8 @@ const createUser = async (req, res) => {
         .send({ message: "Email and password are required" });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       name,
       avatar,

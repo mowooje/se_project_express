@@ -37,7 +37,6 @@ const deleteItem = (req, res) => {
   const userId = req.user._id;
 
   ClothingItem.findById(itemId)
-    .orFail()
     .then((item) => {
       if (!item) {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
@@ -69,6 +68,7 @@ const updateLike = (req, res) => {
     { $addToSet: { likes: userId } },
     { new: true }
   )
+    .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       console.error(err);
