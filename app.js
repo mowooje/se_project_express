@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const { errors } = require("celebrate");
 const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/errorhandler");
 
@@ -12,6 +13,9 @@ app.use(cors());
 // Unprotected routes
 
 app.use("/", mainRouter);
+
+// Celebrate error handler
+app.use(errors());
 
 // Centralized error handler — should come AFTER routes
 app.use(errorHandler);
