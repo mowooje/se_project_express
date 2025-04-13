@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const mainRouter = require("./routes/index");
+const errorHandler = require("./middlewares/errorhandler");
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(cors());
 // Unprotected routes
 
 app.use("/", mainRouter);
+
+// Centralized error handler — should come AFTER routes
+app.use(errorHandler);
 
 // Connect to MongoDB
 mongoose
