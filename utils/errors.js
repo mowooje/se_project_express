@@ -5,6 +5,9 @@ const CONFLICT = 409;
 const UNAUTHORIZED = 401;
 const FORBIDDEN = 403;
 
+const BadRequestError = require("./BadRequestError");
+const NotFoundError = require("./NotFoundError");
+
 module.exports = {
   BAD_REQUEST,
   NOT_FOUND,
@@ -12,4 +15,6 @@ module.exports = {
   CONFLICT,
   UNAUTHORIZED,
   FORBIDDEN,
+  BadRequestError,
+  NotFoundError,
 };
