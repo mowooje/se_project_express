@@ -9,10 +9,15 @@ const {
   deleteLike,
 } = require("../controllers/clothingItem");
 
+const {
+  validateItemCreate,
+  validateItemId,
+} = require("../middlewares/validation");
+
 // CRUD
 
 // Create
-router.post("/", auth, createItem);
+router.post("/", auth, validateItemCreate, createItem);
 
 // Read
 
@@ -20,11 +25,11 @@ router.get("/", getItems);
 
 // Update
 
-router.put("/:itemId/likes", auth, updateLike);
+router.put("/:itemId/likes", auth, validateItemId, updateLike);
 
 // Delete
 
-router.delete("/:itemId", auth, deleteItem);
-router.delete("/:itemId/likes", auth, deleteLike);
+router.delete("/:itemId", auth, validateItemId, deleteItem);
+router.delete("/:itemId/likes", auth, validateItemId, deleteLike);
 
 module.exports = router;
