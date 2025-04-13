@@ -11,7 +11,6 @@ app.use(express.json());
 app.use(cors());
 
 // Unprotected routes
-
 app.use("/", mainRouter);
 
 // Celebrate error handler
