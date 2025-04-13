@@ -15,10 +15,10 @@ const getCurrentUser = (req, res, next) => {
     .orFail()
     .then((user) => res.status(200).send(user))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError("User not found"));
       }
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError("Invalid user ID format"));
       }
       return next(err);
@@ -40,10 +40,10 @@ const updateUserProfile = (req, res, next) => {
       res.status(200).send(userWithoutPassword);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err instanceof mongoose.Error.ValidationError) {
         return next(new BadRequestError(err.message));
       }
-      if (err.name === "DocumentNotFoundError") {
+      if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError("User not found"));
       }
       return next(err);

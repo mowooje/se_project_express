@@ -13,8 +13,8 @@ const createItem = (req, res, next) => {
   ClothingItem.create({ name, weather, imageUrl, owner })
     .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return next(new BadRequestError(err.message));
+      if (err instanceof mongoose.Error.ValidationError) {
+        return next(new BadRequestError("Validation failed: " + err.message));
       }
       return next(err);
     });
@@ -45,7 +45,7 @@ const deleteItem = (req, res, next) => {
       );
     })
     .catch((err) => {
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError("Invalid ID format"));
       }
       return next(err);
@@ -67,7 +67,7 @@ const updateLike = (req, res, next) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError("Item not found"));
       }
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError("Invalid item ID format"));
       }
       return next(err);
@@ -89,7 +89,7 @@ const deleteLike = (req, res, next) => {
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
         return next(new NotFoundError("Item not found"));
       }
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         return next(new BadRequestError("Invalid item ID format"));
       }
       return next(err);
