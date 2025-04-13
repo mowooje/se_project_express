@@ -4,14 +4,21 @@ const cors = require("cors");
 const { errors } = require("celebrate");
 const mainRouter = require("./routes/index");
 const errorHandler = require("./middlewares/errorhandler");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
+// Log every request
+app.use(requestLogger);
+
 // Unprotected routes
 app.use("/", mainRouter);
+
+// Log errors
+app.use(errorLogger);
 
 // Celebrate error handler
 app.use(errors());
