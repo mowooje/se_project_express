@@ -1,16 +1,12 @@
 const mongoose = require("mongoose");
 const ClothingItem = require("../models/clothingItem");
 const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  DEFAULT,
-  FORBIDDEN,
+  BadRequestError,
+  NotFoundError,
+  ForbiddenError,
 } = require("../utils/errors");
 
-const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.body);
-
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
   const owner = req.user._id;
 
@@ -18,51 +14,48 @@ const createItem = (req, res) => {
     .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: err.message });
+        return next(new BadRequestError(err.message));
       }
-      return res.status(DEFAULT).send({ message: "Server error occurred" });
+      return next(err);
     });
 };
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.status(200).send(items))
-    .catch(() =>
-      res.status(DEFAULT).send({ message: "Server error occurred" })
-    );
+    .catch(next);
 };
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   const { itemId } = req.params;
   const userId = req.user._id;
 
   ClothingItem.findById(itemId)
     .then((item) => {
       if (!item) {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        throw new NotFoundError("Item not found");
       }
 
       if (item.owner.toString() !== userId) {
-        return res
-          .status(FORBIDDEN)
-          .send({ message: "You are not authorized to delete this item" });
+        throw new ForbiddenError("You are not authorized to delete this item");
       }
 
-      return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) => {
-        res.status(200).send({ data: deletedItem });
-      });
+      return ClothingItem.findByIdAndDelete(itemId).then((deletedItem) =>
+        res.status(200).send({ data: deletedItem })
+      );
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid ID format" });
+        return next(new BadRequestError("Invalid ID format"));
       }
-      return res.status(DEFAULT).send({ message: "Server error occurred" });
+      return next(err);
     });
 };
 
-const updateLike = (req, res) => {
+const updateLike = (req, res, next) => {
   const userId = req.user._id;
   const { itemId } = req.params;
+
   ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: userId } },
@@ -71,22 +64,20 @@ const updateLike = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      console.error(err);
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        return next(new NotFoundError("Item not found"));
       }
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid item ID format" });
+        return next(new BadRequestError("Invalid item ID format"));
       }
-      return res.status(DEFAULT).send({ message: "Server error occurred" });
+      return next(err);
     });
 };
 
-const deleteLike = (req, res) => {
+const deleteLike = (req, res, next) => {
   const userId = req.user._id;
   const { itemId } = req.params;
+
   ClothingItem.findByIdAndUpdate(
     itemId,
     { $pull: { likes: userId } },
@@ -95,16 +86,13 @@ const deleteLike = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      console.error(err);
       if (err instanceof mongoose.Error.DocumentNotFoundError) {
-        return res.status(NOT_FOUND).send({ message: "Item not found" });
+        return next(new NotFoundError("Item not found"));
       }
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid item ID format" });
+        return next(new BadRequestError("Invalid item ID format"));
       }
-      return res.status(DEFAULT).send({ message: "Server error occurred" });
+      return next(err);
     });
 };
 
