@@ -5,7 +5,7 @@ const {
   CONFLICT,
   UNAUTHORIZED,
   FORBIDDEN,
-} = require("../utils/statusCodes");
+} = require("./statusCodes");
 
 const BadRequestError = require("./BadRequestError");
 const NotFoundError = require("./NotFoundError");
