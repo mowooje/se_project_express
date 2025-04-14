@@ -14,7 +14,7 @@ const createItem = (req, res, next) => {
     .then((item) => res.status(201).send({ data: item }))
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        return next(new BadRequestError("Validation failed: " + err.message));
+        return next(new BadRequestError(`Validation failed: ${err.message}`));
       }
       return next(err);
     });

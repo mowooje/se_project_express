@@ -1,6 +1,6 @@
 const { DEFAULT } = require("../utils/errors");
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res) => {
   const { statusCode = DEFAULT, message } = err;
   res.status(statusCode).send({
     message:
